@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.3.0/dist/leaflet.js"></script>
+
+    <script type="text/javascript" src="CV2_adi_copia.js"></script>
+
+    <style>
+        #map { 
+            width: 100%;
+            height: 900px;
+            box-shadow: 5px 5px 5px #888; 
+        }
+
+        /* Personalización de las etiquetas permanentes */
+        .custom-tooltip {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            padding: 3px 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            border: 1px solid #666;
+        }
+
+        #map-legend {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.5em;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+    }
+
+
+
+    </style>
+</head>
+<body>
+    <div id="map-title"> Cobertura versión 85</div>
+    <div id="map"></div>
+
+    <div id="map-legend" class="legend">
+        <h4>Leyenda</h4>
+        <div><span style="background-color: #84e80d; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Categoría 1: Cobertura CV2</div>
+        <div><span style="background-color: #0968bb; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Categoría 2: Códigos postales propuestos para adición</div>
+        
+    </div>
+
+    <script>
+        var map = L.map("map").setView([18.720169, -99.20629], 12);
+
+        L.tileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        function getColor(state) {
+            switch (state) {
+                case 'Morelos': return '#84e80d';
+                case 'Jojutla': return '#0968bb'; 
+                default: return '#00FF00';
+            }
+        }
+
+        function style(feature) {
+            return {
+                fillColor: getColor(feature.properties.state),
+                weight: 1,
+                opacity: 1,
+                color: 'black',
+                dashArray: '2',
+                fillOpacity: 0.5
+            };
+        }
+
+        function onEachFeature(feature, layer) {
+            if (feature.properties) {
+                // Etiqueta permanente con el atributo "zonificación"
+                layer.bindTooltip(feature.properties.zipcode, {
+                    permanent: true, 
+                    direction: "center",
+                    className: "custom-tooltip"
+                });
+
+                // Popup con más detalles
+                layer.bindPopup(`
+                    <p><b>Código de estación:</b> ${feature.properties.station_code}</p>
+                    <p><b>Localidad:</b> ${feature.properties.locality}</p>
+                    <p><b>Código postal:</b> ${feature.properties.zipcode}</p>
+                    <p><b>Zonificacion:</b> ${feature.properties.zonificacion}</p>
+                `);
+            }
+        }
+
+        var layerGroup = L.geoJSON(mx4, {
+            style: style,
+            onEachFeature: onEachFeature
+        });
+
+        layerGroup.addTo(map);
+
+    </script>
+</body>
